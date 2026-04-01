@@ -114,11 +114,20 @@ let rounds = [];
 let currentRoundMatches = [];
 
 function startGame(player) {
-  // vytvoří data podle složky hráčky
   data = names.map(n => ({
     name: n,
     img: `images/${player}/${n}.jpg`
   }));
+
+  // 🔥 přidáme fallback už tady
+  data.forEach(p => {
+    let testImg = new Image();
+    testImg.src = p.img;
+
+    testImg.onerror = () => {
+      p.img = p.img.replace(".jpg", ".png");
+    };
+  });
 
   currentRound = shuffle([...data]);
   nextRound = [];
@@ -128,9 +137,11 @@ function startGame(player) {
   document.getElementById("startScreen").style.display = "none";
   document.getElementById("game").style.display = "flex";
 
-  nextPair();
+  // 🔥 malý delay (fix pro první 2 obrázky)
+  setTimeout(() => {
+    nextPair();
+  }, 50);
 }
-
 function shuffle(array) {
   return array.sort(() => Math.random() - 0.5);
 }
@@ -158,11 +169,17 @@ function nextPair() {
 }
 
 function update() {
-  document.getElementById("img0").src = currentPair[0].img;
-  document.getElementById("name0").innerText = currentPair[0].name;
+  for (let i = 0; i < 2; i++) {
+    let imgEl = document.getElementById("img" + i);
 
-  document.getElementById("img1").src = currentPair[1].img;
-  document.getElementById("name1").innerText = currentPair[1].name;
+    imgEl.onerror = () => {
+      imgEl.src = currentPair[i].img.replace(".jpg", ".png");
+    };
+
+    imgEl.src = currentPair[i].img;
+
+    document.getElementById("name" + i).innerText = currentPair[i].name;
+  }
 }
 
 function choose(index) {
