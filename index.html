@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8">
+  <title>Bookboy výběr</title>
+  <style>
+    body {
+      background: #111;
+      color: white;
+      text-align: center;
+      font-family: Arial;
+    }
+
+    h1 {
+      margin-top: 20px;
+    }
+
+    .container {
+      display: flex;
+      justify-content: center;
+      gap: 40px;
+      margin-top: 40px;
+    }
+
+    .item {
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .item:hover {
+      transform: scale(1.05);
+    }
+
+    img {
+      width: 220px;
+      height: 300px;
+      object-fit: cover;
+      border-radius: 12px;
+    }
+
+    .selected {
+      box-shadow: 0 0 20px gold;
+      transform: scale(1.08);
+    }
+.bracket {
+  display: flex;
+  justify-content: center;
+  gap: 40px;
+  margin-top: 30px;
+}
+
+.round {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+}
+
+.match {
+  background: #222;
+  padding: 10px;
+  border-radius: 10px;
+  margin: 10px 0;
+  width: 160px;
+  text-align: center;
+}
+
+.player {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 5px 0;
+}
+
+.player img {
+  width: 40px;
+  height: 50px;
+  object-fit: cover;
+  border-radius: 6px;
+}
+
+.winner {
+  border: 2px solid gold;
+}
+  </style>
+</head>
+<body>
+
+<h1>Koho radši? 😏</h1>
+
+<div class="container">
+  <div class="item" id="item0" onclick="choose(0)">
+    <img id="img0">
+    <p id="name0"></p>
+  </div>
+
+  <div class="item" id="item1" onclick="choose(1)">
+    <img id="img1">
+    <p id="name1"></p>
+  </div>
+</div>
+
+<script>
+const data = [
+  { name: "Azriel", img: "images/Azriel.jpg" },
+  { name: "Cassian", img: "images/Cassian.jpg" },
+  { name: "Dorian", img: "images/Dorian.jpg" },
+  { name: "Hunt", img: "images/Hunt.jpg" },
+  { name: "Chaol", img: "images/Chaol.jpg" },
+  { name: "Kai", img: "images/Kai_Azer.jpg" },
+  { name: "Kingfisher", img: "images/Kingfisher.jpg" },
+  { name: "Kitt", img: "images/Kitt_Azer.jpg" },
+  { name: "Liam", img: "images/Liam.jpg" },
+  { name: "Lorcan", img: "images/Lorcan.jpg" },
+  { name: "Lucien", img: "images/Lucien.jpg" },
+  { name: "Luther", img: "images/Luther.png" },
+  { name: "Rhys", img: "images/Rhys.jpg" },
+  { name: "Rowan", img: "images/Rowan.jpg" },
+  { name: "Ruhn", img: "images/Ruhn.jpg" },
+  { name: "Samkiel", img: "images/Samkiel.jpg" },
+  { name: "Tamlin", img: "images/Tamlin.jpg" },
+  { name: "Taran", img: "images/Taran.jpg" },
+  { name: "Tharion", img: "images/Tharion.jpg" },
+  { name: "Xaden", img: "images/Xaden.jpg" }
+];
+
+let currentRound = [];
+let nextRound = [];
+let currentPair = [];
+
+// 🔥 nové věci pro strom
+let rounds = [];
+let currentRoundMatches = [];
+
+function shuffle(array) {
+  return array.sort(() => Math.random() - 0.5);
+}
+
+function startTournament() {
+  currentRound = shuffle([...data]);
+  nextRound = [];
+  rounds = [];
+  currentRoundMatches = [];
+  nextPair();
+}
+
+function nextPair() {
+  // konec turnaje
+  if (currentRound.length === 1 && nextRound.length === 0) {
+    // uložit poslední kolo
+    if (currentRoundMatches.length > 0) {
+      rounds.push(currentRoundMatches);
+    }
+    showWinner(currentRound[0]);
+    return;
+  }
+
+  // konec kola
+  if (currentRound.length < 2) {
+    rounds.push(currentRoundMatches);
+    currentRoundMatches = [];
+
+    currentRound = nextRound;
+    nextRound = [];
+    nextPair();
+    return;
+  }
+
+  currentPair = [currentRound.pop(), currentRound.pop()];
+  update();
+}
+
+function update() {
+  document.getElementById("img0").src = currentPair[0].img;
+  document.getElementById("name0").innerText = currentPair[0].name;
+
+  document.getElementById("img1").src = currentPair[1].img;
+  document.getElementById("name1").innerText = currentPair[1].name;
+}
+
+function choose(index) {
+  let winner = currentPair[index];
+  let loser = currentPair[index === 0 ? 1 : 0];
+
+  document.getElementById("item" + index).classList.add("selected");
+
+  setTimeout(() => {
+    document.getElementById("item" + index).classList.remove("selected");
+
+    // 🔥 uložíme zápas
+    currentRoundMatches.push({
+      p1: currentPair[0].name,
+      p2: currentPair[1].name,
+      winner: winner.name
+    });
+
+    nextRound.push(winner);
+    nextPair();
+  }, 200);
+}
+
+function showWinner(winner) {
+  let bracketHTML = `<div class="bracket">`;
+
+  rounds.forEach((round) => {
+    bracketHTML += `<div class="round">`;
+
+    round.forEach(match => {
+      let p1 = data.find(p => p.name === match.p1);
+      let p2 = data.find(p => p.name === match.p2);
+
+      bracketHTML += `
+        <div class="match">
+          <div class="player ${match.winner === match.p1 ? "winner" : ""}">
+            <img src="${p1.img}">
+            <span>${p1.name}</span>
+          </div>
+          <div class="player ${match.winner === match.p2 ? "winner" : ""}">
+            <img src="${p2.img}">
+            <span>${p2.name}</span>
+          </div>
+        </div>
+      `;
+    });
+
+    bracketHTML += `</div>`;
+  });
+
+  bracketHTML += `</div>`;
+
+  document.body.innerHTML = `
+    <h1>👑 KRÁL BOOKBOYS 👑</h1>
+    <img src="${winner.img}" style="width:250px; border-radius:15px;">
+    <h2>${winner.name}</h2>
+
+    <h2>🏆 Turnajový pavouk</h2>
+    ${bracketHTML}
+
+    <br>
+    <button onclick="location.reload()">Hrát znovu</button>
+  `;
+}
+
+startTournament();
+</script>
+
+</body>
+</html>
