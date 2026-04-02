@@ -45,6 +45,7 @@
       justify-content: center;
       gap: 40px;
       margin-top: 30px;
+      flex-wrap: wrap;
     }
 
     .round {
@@ -92,19 +93,29 @@
   <div class="item" id="item0" onclick="choose(0)">
     <img id="img0"><p id="name0"></p>
   </div>
+
   <div class="item" id="item1" onclick="choose(1)">
     <img id="img1"><p id="name1"></p>
   </div>
 </div>
 
 <script>
-// 🔥 seznam jmen (stejný pro všechny)
-const names = [
-  "Azriel","Cassian","Rhys","Lucien",
-  "Rowan","Dorian","Lorcan","Chaol",
-  "Hunt","Ruhn","Tharion",
-  "Xaden","Samkiel","Luther"
-];
+
+// 🔥 automatické seznamy podle souborů
+const players = {
+  misa: [
+    "Azriel.jpg","Cassian.jpg","Dorian.jpg","Hunt.jpg","Chaol.jpg",
+    "Kai_Azer.jpg","Kingfisher.jpg","Kitt_Azer.jpg","Liam.jpg",
+    "Lorcan.jpg","Lucien.jpg","Rhys.jpg","Rowan.jpg","Ruhn.jpg",
+    "Tamlin.jpg","Tharion.jpg","Xaden.jpg"
+  ],
+
+  market: [
+    "Azriel.jpg","Cassian.jpg","Dorian.jpg","Chaol.jpg","Kingfisher.jpg",
+    "Liam.jpg","Lucien.jpg","Luther.jpg","Rhys.jpg","Samkiel.jpg",
+    "Tamlin.jpg","Taran.jpg","Xaden.jpg"
+  ]
+};
 
 let data = [];
 let currentRound = [];
@@ -114,20 +125,14 @@ let rounds = [];
 let currentRoundMatches = [];
 
 function startGame(player) {
-  data = names.map(n => ({
-    name: n,
-    img: `images/${player}/${n}.jpg`
+  let files = players[player];
+
+  data = files.map(file => ({
+    name: file
+      .replace(/\.[^/.]+$/, "") // odstraní .jpg
+      .replace(/_/g, " "),     // Kai_Azer → Kai Azer
+    img: `images/${player}/${file}`
   }));
-
-  // 🔥 přidáme fallback už tady
-  data.forEach(p => {
-    let testImg = new Image();
-    testImg.src = p.img;
-
-    testImg.onerror = () => {
-      p.img = p.img.replace(".jpg", ".png");
-    };
-  });
 
   currentRound = shuffle([...data]);
   nextRound = [];
@@ -137,11 +142,9 @@ function startGame(player) {
   document.getElementById("startScreen").style.display = "none";
   document.getElementById("game").style.display = "flex";
 
-  // 🔥 malý delay (fix pro první 2 obrázky)
-  setTimeout(() => {
-    nextPair();
-  }, 50);
+  nextPair();
 }
+
 function shuffle(array) {
   return array.sort(() => Math.random() - 0.5);
 }
@@ -169,17 +172,11 @@ function nextPair() {
 }
 
 function update() {
-  for (let i = 0; i < 2; i++) {
-    let imgEl = document.getElementById("img" + i);
+  document.getElementById("img0").src = currentPair[0].img;
+  document.getElementById("name0").innerText = currentPair[0].name;
 
-    imgEl.onerror = () => {
-      imgEl.src = currentPair[i].img.replace(".jpg", ".png");
-    };
-
-    imgEl.src = currentPair[i].img;
-
-    document.getElementById("name" + i).innerText = currentPair[i].name;
-  }
+  document.getElementById("img1").src = currentPair[1].img;
+  document.getElementById("name1").innerText = currentPair[1].name;
 }
 
 function choose(index) {
@@ -233,6 +230,7 @@ function showWinner(winner) {
     <br><button onclick="location.reload()">Znovu</button>
   `;
 }
+
 </script>
 
 </body>
